@@ -9,55 +9,12 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity">
 
-    <EditText
-        android:id="@+id/text_old"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:editable="false"
-        android:ems="10"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:hint="单击选择旧版本apk"
-        tools:ignore="Deprecated">
-
-        <requestFocus />
-    </EditText>
-
-    <EditText
-        android:id="@+id/text_patcher"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/text_new"
-        android:layout_below="@+id/text_old"
-        android:layout_marginTop="21dp"
-        android:editable="false"
-        android:ems="10"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:hint="单击选择补丁文件"
-        tools:ignore="Deprecated" />
-
-    <EditText
-        android:id="@+id/text_new"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/text_old"
-        android:layout_below="@+id/text_patcher"
-        android:layout_marginTop="24dp"
-        android:ems="10"
-        android:hint="输入生成文件名" />
-
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:layout_marginTop="24dp"
-        android:text="合并Patch" />
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="后台检查更新，\n如有更新则下载并安装之。"
+        android:textSize="20dp"
+        android:lineSpacingExtra="10dp"/>
 
 </LinearLayout>

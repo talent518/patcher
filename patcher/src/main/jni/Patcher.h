@@ -14,7 +14,7 @@ extern "C" {
  * Method:    patcher
  * Signature: ()V
  */
-JNIEXPORT jint JNICALL Java_com_dodola_patcher_utils_AppUtils_patcher
+JNIEXPORT jint JNICALL Java_com_baize_patcher_api_utils_AppUtils_patcher
   (JNIEnv *, jobject, jstring argv1, jstring argv2, jstring argv3);
 
 #ifdef __cplusplus

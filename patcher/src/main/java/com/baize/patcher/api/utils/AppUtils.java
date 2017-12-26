@@ -14,7 +14,7 @@ import android.net.Uri;
 public class AppUtils {
 	static {
 		// 调用.so文件,引入打包库
-		System.loadLibrary("patcher");
+		System.loadLibrary("Patcher");
 	}
 
 	/**

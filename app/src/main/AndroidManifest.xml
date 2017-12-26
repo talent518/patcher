@@ -3,6 +3,7 @@
     package="com.baize.patcher.demo">
 
     <application
+        android:name=".AppContext"
         android:allowBackup="true"
         android:configChanges="orientation|keyboardHidden"
         android:icon="@drawable/ic_launcher"
