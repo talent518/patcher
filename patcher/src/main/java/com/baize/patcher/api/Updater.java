@@ -111,8 +111,8 @@ public class Updater {
                         downloadTask.pause();
                     }
                 });
-                String path = Environment.getExternalStoragePublicDirectory("Download").getAbsolutePath();
-                downloadTask.setPath(path + File.separator + dao.getFileName());
+                File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                downloadTask.setPath(path.getAbsolutePath() + File.separator + dao.getFileName());
                 Log.v(TAG, "download: " + downloadTask.getTargetFilePath());
                 downloadTask.setListener(new FileDownloadListener() {
                     @Override
@@ -150,6 +150,7 @@ public class Updater {
                         }
                         if (!dao.isPatch()) {
                             AppUtils.installApplication(activity, file);
+                            return;
                         }
 
                         if (!md5(new File(context.getPackageCodePath())).equals(dao.getOldMd5())) {
@@ -187,7 +188,7 @@ public class Updater {
                     protected void error(final BaseDownloadTask task, Throwable e) {
                         Log.d(TAG, "download  error", e);
 
-                        new AlertDialog.Builder(context).setTitle("下载提示").setMessage("下载失败：" + e.getStackTrace().toString()).setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        new AlertDialog.Builder(activity).setTitle("下载提示").setMessage("下载失败：" + e.getStackTrace().toString()).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 task.start();
