@@ -1,5 +1,6 @@
 package com.baize.patcher.api;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -24,6 +25,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.net.ssl.SSLException;
 
@@ -71,6 +75,35 @@ public class Updater {
         FileDownloader.init(context);
     }
 
+    public static int requestPermissions(Activity activity, String[] perms, int requestCode) {
+        List<String> reqPerms = new ArrayList<>();
+
+        if (perms == null) {
+            reqPerms.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            reqPerms.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            reqPerms.add(Manifest.permission.ACCESS_NETWORK_STATE);
+            reqPerms.add(Manifest.permission.INTERNET);
+        } else {
+            reqPerms.addAll(Arrays.asList(perms));
+
+            if (!reqPerms.contains(Manifest.permission.READ_EXTERNAL_STORAGE))
+                reqPerms.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+
+            if (!reqPerms.contains(Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                reqPerms.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+            if (!reqPerms.contains(Manifest.permission.ACCESS_NETWORK_STATE))
+                reqPerms.add(Manifest.permission.ACCESS_NETWORK_STATE);
+
+            if (!reqPerms.contains(Manifest.permission.INTERNET))
+                reqPerms.add(Manifest.permission.INTERNET);
+        }
+
+        perms = new String[reqPerms.size()];
+
+        return AppUtils.requestPermissions(activity, reqPerms.toArray(perms), requestCode);
+    }
+
     public static void checkUpdater(final Activity activity, final String url, final CheckUpdateCallback callback) {
         final AsyncHttpClient client = new AsyncHttpClient();
 
@@ -88,8 +121,7 @@ public class Updater {
 
                 final CheckDao dao = JsonUtil.decode(body, CheckDao.class);
 
-                if (callback != null) {
-                    callback.success(dao);
+                if (callback != null && callback.success(dao)) {
                     return;
                 }
 
@@ -112,7 +144,7 @@ public class Updater {
                     }
                 });
                 File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                downloadTask.setPath(path.getAbsolutePath() + File.separator + dao.getFileName());
+                downloadTask.setPath(path.getAbsolutePath() + File.separator + context.getPackageName() + "-" + dao.getFileName());
                 Log.v(TAG, "download: " + downloadTask.getTargetFilePath());
                 downloadTask.setListener(new FileDownloadListener() {
                     @Override
@@ -142,21 +174,25 @@ public class Updater {
                         String err = null;
                         if (!md5(file).equals(dao.getMd5())) {
                             err = "下载的文件MD5不一致";
-                            if (callback != null) {
-                                callback.error(err);
+                            if (callback != null && callback.error(err)) {
+                                return;
                             }
                             Log.d(TAG, err);
                             return;
                         }
                         if (!dao.isPatch()) {
+                            if (callback != null && callback.install(file)) {
+                                return;
+                            }
+
                             AppUtils.installApplication(activity, file);
                             return;
                         }
 
                         if (!md5(new File(context.getPackageCodePath())).equals(dao.getOldMd5())) {
                             err = "旧版本的文件MD5不一致";
-                            if (callback != null) {
-                                callback.error(err);
+                            if (callback != null && callback.error(err)) {
+                                return;
                             }
                             Log.d(TAG, err);
                             return;
@@ -176,6 +212,10 @@ public class Updater {
                             return;
                         }
 
+                        if (callback != null && callback.install(newFile)) {
+                            return;
+                        }
+
                         AppUtils.installApplication(activity, newFile);
                     }
 
@@ -187,6 +227,10 @@ public class Updater {
                     @Override
                     protected void error(final BaseDownloadTask task, Throwable e) {
                         Log.d(TAG, "download  error", e);
+
+                        if (callback != null && callback.error(e.getMessage())) {
+                            return;
+                        }
 
                         new AlertDialog.Builder(activity).setTitle("下载提示").setMessage("下载失败：" + e.getStackTrace().toString()).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                             @Override
@@ -295,11 +339,17 @@ public class Updater {
     }
 
     public interface CheckUpdateCallback {
-        void success(CheckDao dao);
+        boolean success(CheckDao dao);
 
-        void failure(int statusCode, Header[] _headers, byte[] responseBody, Throwable error);
+        boolean progress(int soFarBytes, int totalBytes);
 
-        void error(String err);
+        boolean completed();
+
+        boolean install(File file);
+
+        boolean failure(int statusCode, Header[] _headers, byte[] responseBody, Throwable error);
+
+        boolean error(String err);
     }
 
     public class CheckDao {
