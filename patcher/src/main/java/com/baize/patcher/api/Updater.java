@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
@@ -111,7 +112,12 @@ public class Updater {
         client.setSSLSocketFactory(_sslSocketFactory);
 
         client.setUserAgent("Android/" + Build.VERSION.RELEASE + "(SDK/" + Build.VERSION.SDK_INT + ") Model(" + Build.MODEL + ")" + " API/1.0");
-
+        try {
+            ApplicationInfo info = activity.getApplicationInfo();
+            client.addHeader("Debug", Boolean.toString((info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         final AsyncHttpResponseHandler handler = new AsyncHttpResponseHandler() {
 
             @Override

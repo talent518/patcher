@@ -3,16 +3,17 @@
 $versionName = isset($_SERVER['HTTP_VERSION_NAME']) ? $_SERVER['HTTP_VERSION_NAME'] : '3.5';
 $lastest = trim(file_get_contents('./lastest'));
 
-if($versionName >= $lastest) {
+if(!greaterVersion($versionName, $lastest)) {
 	renderJson([
 		'isNeedUpdate' => false
 	]);
 } else {
-	$newName = $name = $lastest . '.apk';
-	$oldName = $versionName . '.apk';
+	$suffix = ((isset($_SERVER['HTTP_DEBUG']) && $_SERVER['HTTP_DEBUG'] === 'true') ? '-debug' : null);
+	$newName = $name = $lastest . $suffix . '.apk';
+	$oldName = $versionName . $suffix . '.apk';
 	$isPatch = false;
 	if(file_exists($oldName) && (!isset($_SERVER['HTTP_MD5']) || md5File($oldName) === $_SERVER['HTTP_MD5'])) {
-		$patchName = $versionName . '-' . $lastest . '.patch';
+		$patchName = $versionName . '-' . $lastest . $suffix . '.patch';
 		file_exists($patchName) or system('bsdiff ' . $oldName . ' ' . $newName . ' ' . $patchName . ' > /dev/null 2>&1');
 		if(filesize($patchName) < filesize($name)) {
 			$name = $patchName;
@@ -29,6 +30,17 @@ if($versionName >= $lastest) {
 		'oldMd5' => $isPatch ? md5File($oldName) : null,
 		'newMd5' => $isPatch ? md5File($newName) : null
 	]);
+}
+
+function greaterVersion($old, $new) {
+	$olds = explode('.', trim(preg_replace('/[^0-9\.]+/', '', $old), '.'));
+	$news = explode('.', trim(preg_replace('/[^0-9\.]+/', '', $new), '.'));
+	foreach($news as $i => $new) {
+		if(!isset($olds[$i]) || (int)($new) > (int)($olds[$i])) {
+			return true;
+		}
+	}
+	return false;
 }
 
 function md5File($file) {
