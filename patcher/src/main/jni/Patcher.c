@@ -7,7 +7,7 @@
 JNIEXPORT jint JNICALL Java_com_baize_patcher_api_utils_AppUtils_patcher(JNIEnv* env,
 		jobject othis, jstring argv1, jstring argv2, jstring argv3) {
 	char *argv[4];
-	int loopVar,result;
+	int result;
 
 	__android_log_print(ANDROID_LOG_INFO, "bspatch.c", "开始打包");
 
